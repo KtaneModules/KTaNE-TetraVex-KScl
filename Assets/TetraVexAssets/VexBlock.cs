@@ -13,6 +13,7 @@ public class VexBlock : MonoBehaviour
 	public TextMesh[] labels;
 	private int[] digits = new int[4];
 
+	public int idealPosition;
 	private int position;
 
 	// For logging
@@ -26,11 +27,11 @@ public class VexBlock : MonoBehaviour
 	}
 
 	// Used in initial setup only
-	public void SetFace(int position, int digit, Material mat)
+	public void SetFace(int face, int digit, Material mat)
 	{
-		digits[position] = digit;
-		labels[position].text = digit.ToString();
-		faces[position].material = mat;
+		digits[face] = digit;
+		labels[face].text = digit.ToString();
+		faces[face].material = mat;
 	}
 
 	public int GetPosition()

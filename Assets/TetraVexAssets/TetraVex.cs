@@ -111,8 +111,11 @@ public class TetraVex : MonoBehaviour
 		// Scramble the pieces now that we've generated the solution.
 		List<int> vexPositions = new List<int> {0, 1, 2, 3, 4, 5, 6, 7, 8};
 		vexPositions.Shuffle();
-		for(int i = 0; i < 9; ++i)
+		for (int i = 0; i < 9; ++i)
+		{
+			vexes[i].idealPosition = i;
 			vexes[i].SetPosition(vexPositions[i]);
+		}
 
 		// Logging
 		Debug.LogFormat("[TetraVex #{0}] Intended solution:", thisLogID);
@@ -308,17 +311,43 @@ public class TetraVex : MonoBehaviour
 		yield break;
 	}
 
-	void TwitchHandleForcedSolve()
+	public IEnumerator TwitchHandleForcedSolve()
 	{
 		if (moduleSolved)
-			return;
+			yield break;
+		Debug.LogFormat("[TetraVex #{0}] Force solve requested by Twitch Plays.", thisLogID);
 
-		Debug.LogFormat("[TetraVex #{0}] SOLVE: Force solve requested by Twitch Plays.", thisLogID);
-		moduleSolved = true;
+		int i, pos;
+		while (true)
+		{
+			pos = 0;
+			for (i = 0; i < 9; ++i)
+			{
+				// If this vex isn't in the location it started in
+				if ((pos = vexes[i].GetPosition()) != i)
+				{
+					// Hold this vex, wherever it is
+					vexButtonTargets[pos].OnInteract();
+					yield return new WaitForSeconds(0.4f);
+					break;
+				}
+			}
+			// All vexes are in their starting locations?
+			if (i == 9)
+				break;
 
-		for (int i = 0; i < 9; ++i)
-			vexes[i].SetPosition(i);
-
-		bombModule.HandlePass();
+			// While we're not holding the vex that goes in the empty spot
+			while (currentlyHeldVex.idealPosition != pos)
+			{
+				// Swap it into the position it started in
+				vexButtonTargets[currentlyHeldVex.idealPosition].OnInteract();
+				yield return new WaitForSeconds(0.4f);
+			}
+			// Set down the held piece into the position it started in
+			vexButtonTargets[pos].OnInteract();
+			yield return new WaitForSeconds(0.4f);
+		}
+		// Now check to solve.
+		checkButton.OnInteract();
 	}
 }
